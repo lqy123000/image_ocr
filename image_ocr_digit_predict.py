@@ -1,4 +1,4 @@
-'''Predict digits OCR images using keras model.
+'''Predict OCR images using keras model.
 
 '''
 import os
@@ -9,7 +9,12 @@ from tensorflow.python.keras.preprocessing import image
 from scipy import ndimage
 from PIL import Image, ImageDraw, ImageFont
 
-alphabet = u'0123456789 '
+# digit classes
+# alphabet = u'0123456789 '
+
+# English characters classes
+alphabet = u'abcdefghijklmnopqrstuvwxyz '
+
 OUT_DIR = r"E:\Users\Desktop\download\1"
 
 # Reverse translation of numerical classes back to characters
@@ -68,7 +73,7 @@ def paint_text(text, w, h, rotate=True, ud=True, multi_fonts=True, save_path=Non
         a = image.random_rotation(a, 70 * (np.min([top_left_y, h - box_height - top_left_y])) / w)
     a = speckle(a)
 
-    if save_path is not None:
+    if save_path:
         save_array = a[0, :, :] * 255
         save_array = save_array.astype(np.uint8)
         save_image = Image.fromarray(save_array)
@@ -133,7 +138,7 @@ def predict_generate(model, img_w, img_h, batch, batch_size, max_string_len, sav
 def main():
     img_w = 512
     img_h = 64
-    model = keras.models.load_model("./model/image_ocr_digit.h5")
+    model = keras.models.load_model("./model/image_ocr_word.h5")
     # model.summary()
     # predict_image(model, os.path.join(OUT_DIR, "1.png"), img_w, img_h)
     predict_generate(model, img_w, img_h, 32, 32, 25, False)

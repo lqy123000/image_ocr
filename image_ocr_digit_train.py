@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
-'''CNN+GRU+CTC network for optical character recognition of generated digits images.
+'''CNN+GRU+CTC network for optical character recognition of generated characters images.
 
 This source code bases on "image_ocr.py" in keras examples.
 Some main changes are listed as follows:
-* Generate digits in random rather than loading words from file.
-* Reduce epochs since digits are more easy to fit than words.
-* The function "on_train_begin" seems working in parallel with
-"fit_generator", so built word list on constructor.
+* Generate characters in random rather than loading words from file.
 * Change network architecture. BN is added after
 Conv2D and one BiGRU is removed, since the origin network
-is found hard to converge when used for recognize words.
-* Replace cairocffi with PIL. cairocffi relies on GTK which is not easy 
+is found hard to converge.
+* Reduce epochs since BN accelerates training.
+* The function "on_train_begin" seems working in parallel with
+"fit_generator", so built word list on constructor.
+* Replace cairocffi with PIL. cairocffi relies on GTK which is not easy
 to install on windows.
 * If font size is too large to paint, try smaller size rather than
 throw a exception immediately.
@@ -45,8 +45,10 @@ from tensorflow.python.keras import callbacks
 OUTPUT_DIR = './keras/ocr/image_ocr'
 
 # digit classes
-alphabet = u'0123456789 '
+# alphabet = u'0123456789 '
 
+# English characters classes
+alphabet = u'abcdefghijklmnopqrstuvwxyz '
 
 # this creates larger "blotches" of noise which look
 # more realistic than just adding gaussian noise
@@ -190,7 +192,7 @@ class TextImageGenerator(callbacks.Callback):
                     self.max_string_len is None or
                     len(word) <= self.max_string_len)
 
-        # generate digits in random
+        # generate characters in random
         for _ in range(int(self.num_words * self.mono_fraction)):
             word_len = np.random.randint(self.max_string_len // 2, self.max_string_len + 1)
             word = ""
@@ -199,7 +201,7 @@ class TextImageGenerator(callbacks.Callback):
             if _is_length_of_word_valid(word):
                 tmp_string_list.append(word)
 
-        # generate digits with black in random (seems hard to train)
+        # generate characters with black in random (seems hard to train)
         for _ in range(self.num_words - int(self.num_words * self.mono_fraction)):
             word_len = np.random.randint(self.max_string_len // 2, self.max_string_len + 1)
             word = ""
@@ -361,8 +363,8 @@ class VizCallback(callbacks.Callback):
                 the_input = word_batch['the_input'][i, :, :, 0]
             pylab.imshow(the_input.T, cmap='Greys_r')
             pylab.xlabel(
-                'Truth = \'%s\'\nGuess = \'%s\'' %
-                (word_batch['source_str'][i], res[i]))
+                'Truth = \'{}\'\nPredict = \'{}\' ({})'
+                .format(word_batch['source_str'][i], res[i], word_batch['source_str'][i] == res[i]))
         fig = pylab.gcf()
         fig.set_size_inches(10, 13)
         pylab.savefig(os.path.join(self.output_dir, 'e%02d.png' % (epoch)))
@@ -428,8 +430,7 @@ def train(run_name, start_epoch, stop_epoch, img_w, build_word_count,
     # cuts down input size going into RNN:
     inner = Dense(time_dense_size, activation=act, name='dense1')(inner)
 
-    # Two layers of bidirectional GRUss
-    # GRU seems to work as well, if not better than LSTM:
+    # bidirectional GRU, GRU seems to work as well, if not better than LSTM:
     gru_1 = GRU(rnn_size, return_sequences=True,
                 kernel_initializer=kernel_init, name='gru1')(inner)
     gru_1b = GRU(rnn_size, return_sequences=True,
@@ -483,28 +484,28 @@ def train(run_name, start_epoch, stop_epoch, img_w, build_word_count,
         initial_epoch=start_epoch,
         verbose=1)
 
-    if save_model_path is not None:
+    if save_model_path:
         predict_model = Model(inputs=input_data, outputs=y_pred)
         predict_model.save(save_model_path)
 
 if __name__ == '__main__':
     RUN_NAME = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-    # RUN_NAME = "2019-01-05_18-02-10"
-    SAVE_MODEL_PATH = "./model/image_ocr_digit_test.h5"
-    train(run_name=RUN_NAME, 
+    # RUN_NAME = "EnglishWord_GRU"
+    SAVE_MODEL_PATH = "./model/image_ocr_word.h5"
+    train(run_name=RUN_NAME,
           start_epoch=0,
           stop_epoch=12,
           img_w=128,
-          build_word_count=16000,          
+          build_word_count=16000,
           max_string_len=5,
           mono_fraction=1)
     # increase to wider images and start at epoch 12.
     # The learned weights are reloaded
-    train(run_name=RUN_NAME, 
+    train(run_name=RUN_NAME,
           start_epoch=12,
           stop_epoch=20,
           img_w=512,
-          build_word_count=32000,          
+          build_word_count=32000,
           max_string_len=25,
           mono_fraction=1,
           save_model_path=SAVE_MODEL_PATH)
