@@ -20,9 +20,10 @@ throw a exception immediately.
 * Support saving "predict_model".
 
 ## Results
-Test 10000 random images.
-* **digits** test acc: 99.76% for training 15 epochs 
-* **English character** test acc: 96.16% for training 16 epochs 
+Test 10240 random images.
+* **digits** test acc: 99.76% for training 15 epochs
+* **English character** test acc: 96.16% for training 16 epochs
+* **captcha** test acc: 82.93% for training 6 epochs (fix length 4)
 
 ## References
 * [keras example "image_ocr.py"](https://github.com/keras-team/keras/blob/master/examples/image_ocr.py)
