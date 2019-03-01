@@ -24,6 +24,9 @@ Test 10240 random images.
 * **digits** test acc: 99.76% for training 15 epochs
 * **English character** test acc: 96.16% for training 16 epochs
 * **captcha** test acc: 82.93% for training 6 epochs (fix length 4)
+* **captcha_cnn** test acc: 97.06% for training 10 epochs (fix length 4)
 
 ## References
 * [keras example "image_ocr.py"](https://github.com/keras-team/keras/blob/master/examples/image_ocr.py)
+* [Multi-digit Number Recognition from Street View Imagery using Deep Convolutional Neural Networks](https://arxiv.org/abs/1312.6082)
+* [https://github.com/matterport/Mask_RCNN](https://github.com/matterport/Mask_RCNN)
